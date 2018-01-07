@@ -7,12 +7,13 @@ set -e
 # parse args
 BUILD_DIR=$1
 CACHE_DIR=$2
+ENV_DIR=$3
 
 echo "-----> compile called with arguments....."
-echo "\$0----->$0"
-echo "\$1----->$1"
-echo "\$2----->$2"
-echo "\$3----->$3"
+echo "\$0--executable--->$0"
+echo "\$1--build_dir --->$1"
+echo "\$2--cache-dir --->$2"
+echo "\$3--env_dir   --->$3"
 
 # <BUILD_DIR> is (during this stage) a temporary directory. 
 # During execution of your slug it'll be known as '/app'.
@@ -20,8 +21,6 @@ echo "\$3----->$3"
 
 . $(dirname $0)/common
 
-
-BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 
 function indent() {
   c='s/^/       /'
@@ -34,19 +33,25 @@ function indent() {
 
 #create the cache dir if it doesn't exist
 
-# change to vendoring dir to install kx tcl
+## Make sure tcl is in the cache dir. 
 
-if [ -x $TCL_HOME/install/bin/wish ] ; then
-    #assuming tcl is already installed...
-	echo "-----> Using TCL $TCL_VER....."
-else
-	echo "-----> Installing TCL $TCL_VER...from '$TCL_URL' ... [start]"
-	mkdir -p $TCL_HOME && curl $TCL_URL -s -o - | tar xzf - -C $TCL_HOME
-	#cd $TCL_HOME
-	#mkdir -p $CACHE_DIR/vendor/tcl
-	sh $TCL_HOME/Active*/install.sh --directory $TCL_HOME/install
-	echo "-----> Installing TCL $TCL_VER..... [done ]!"
+if [ ! -x "$CACHE_DIR/bin/tclsh" ] ; then
+	echo "-----> Cacheing TCL from '$TCL_URL' "
+
+    mkdir -p $CACHE_DIR/bin && curl $TCL_URL -s -o - > $CACHE_DIR/bin/tclsh && chmod +x $CACHE_DIR/bin/tclsh
 fi
+
+## the exit and tr commands are so we work with windows kits.  windows kits run wish by default.
+## you HAVE send stdout through a pipe in order to get the out from tcl, otherwise the output shows 
+## up in the wish internal console.  piping through "cat" would make it work, but you get the extra
+## newline which might be a windows \r.  pipe through tr and get rid of any newline.
+TCL_VERSION=$(echo "puts [info patchlevel];exit" | $CACHE_DIR/bin/tclsh | tr -d '\n\r')
+
+echo "-----> TCL version=<$TCL_VERSION> found in $CACHE_DIR/bin/tclsh"
+
+mkdir -p "$BUILDPACK_DIR/bin"
+cp -p "$CACHE_DIR/bin/tclsh" "$BUILDPACK_DIR/bin"
+echo "-----> TCL installed in $BUILDPACK_DIR/bin"
 
 # copy over environment
 mkdir -p $BUILD_DIR/.profile.d
@@ -54,21 +59,19 @@ cp $(dirname $0)/tcl_environment.sh $BUILD_DIR/.profile.d/tcl_environment.sh
 
 
 if [ ! -f $BUILD_DIR/init.tcl ] ; then
-	echo "Failed to run app with TCL/tk"
+	echo "----->  Failed to run app with TCL/tk.  Missing init.tcl file"
 fi
 
 	
-# change to build dir to run ant
+# change to build dir 
 cd ${BUILD_DIR}
 
 # build app
-BUILDCMD="${TCL_HOME}/install/bin/tclsh init.tcl"
+BUILDCMD="$CACHE_DIR/bin/tclsh init.tcl"
 echo "-----> executing $BUILDCMD"
 
 $BUILDCMD 2>&1 | indent
 ls -al ${PWD}  | indent
-
-ls -al ${BUILD_DIR}  | indent
 
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   echo " !     Failed to build app with tcl "

@@ -4,6 +4,9 @@ heroku-buildpack-tcl
 Heroku builpack for TCL
 
 Use TCL-Buildpack if you need Heroku to execute a TCL scripts.
+This will install a version of tclkit from http://tclkits.rkeene.org/fossil/wiki?name=Downloads
+Thanks to Roy Keene for his work on pre building tclkits!
+
 
 ## Usage
 
@@ -19,9 +22,7 @@ $>heroku login
 <br>-----> git push heroku master
 <br>Fetching repository, done.
 <br>Counting objects: 5, done.
-<br>Delta compression using up to 4 threads.
-<br>Compressing objects: 100% (3/3), done.
-<br>Writing objects: 100% (3/3), 299 bytes | 0 bytes/s, done.
+<br>...
 <br>Total 3 (delta 1), reused 0 (delta 0)
 
 <br>-----> Fetching custom git buildpack... done
