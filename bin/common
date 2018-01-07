@@ -7,10 +7,10 @@ echo "sourcing common file"
 
 
 ## windows version
-TCL_URL="http://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491"
+#TCL_URL="http://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-win32-x86_64.exe?name=403c507437d0b10035c7839f22f5bb806ec1f491"
 
 ## linux version
-#TCL_URL="http://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-rhel5-x86_64?name=36b5cb68899cfcb79417a29f9c6d8176ebae0d24"
+TCL_URL="http://tclkits.rkeene.org/fossil/raw/tclkit-8.6.3-rhel5-x86_64?name=36b5cb68899cfcb79417a29f9c6d8176ebae0d24"
 
 #VENDORING_DIR="$BUILD_DIR/.buildpack"
 #TCL_HOME=$VENDORING_DIR/tcl-$TCL_VER
